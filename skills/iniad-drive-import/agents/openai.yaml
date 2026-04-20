@@ -1,0 +1,4 @@
+version: 1
+display_name: INIAD Drive Import
+short_description: Retrieve course files from INIAD Google Drive with iniad-gdrive.
+default_prompt: Use iniad-gdrive to find and import the requested INIAD Google Drive file, then continue the local task.

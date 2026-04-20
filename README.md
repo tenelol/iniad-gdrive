@@ -39,6 +39,23 @@ npm install
 6. `./bin/iniad-gdrive doctor`
 7. `search` または `import` を使う
 
+## Codex Skill
+
+Codex で能動的に使わせたい場合は、この repo の skill を `~/.codex/skills` に入れます。
+
+```bash
+npm run install-skill
+```
+
+インストールされる skill 名は `iniad-drive-import` です。  
+新しい Codex セッションでは、Drive URL や「INIAD の Drive から取ってきて」のような依頼でこの skill が自動選択されやすくなります。
+
+skill 本体:
+
+- [skills/iniad-drive-import/SKILL.md](./skills/iniad-drive-import/SKILL.md)
+
+この repo を使う agent 向けの運用メモは [AGENTS.md](./AGENTS.md) にあります。
+
 ## Auth
 
 INIAD 用の認証は専用 config dir に分けます。
@@ -104,6 +121,8 @@ query から import:
 ```bash
 ./bin/iniad-gdrive import --query "name = 'stats03.zip'" --folder "https://drive.google.com/drive/folders/FOLDER_ID"
 ```
+
+skill を使う agent でも、内部的には同じ `iniad-gdrive import --query ... --folder ...` に寄せる想定です。
 
 保存先変更:
 

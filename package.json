@@ -9,7 +9,8 @@
   "scripts": {
     "test": "./tests/test.sh",
     "doctor": "./bin/iniad-gdrive doctor",
-    "setup": "./bin/iniad-gdrive setup"
+    "setup": "./bin/iniad-gdrive setup",
+    "install-skill": "./scripts/install-codex-skill.sh"
   },
   "dependencies": {
     "chalk": "^5.3.0",
