@@ -3,6 +3,8 @@
 `iniad-gdrive` は INIAD の Google Drive から課題ファイルや授業資料をローカルへ取り込むための CLI です。  
 認証は Google の現行 desktop OAuth loopback flow を使います。
 
+初回利用には Google Cloud Console で作成した Desktop OAuth credentials と、ブラウザ経由の OAuth 認証が必要です。
+
 主用途は read-only import です。
 
 - `setup`: config dir を作り、credentials 配置先を案内する
@@ -38,6 +40,11 @@ npm install
 5. `./bin/iniad-gdrive auth`
 6. `./bin/iniad-gdrive doctor`
 7. `search` または `import` を使う
+
+注意:
+
+- 初回利用時は OAuth 認証が必須です
+- `credentials.json` を置いただけでは不十分で、`./bin/iniad-gdrive auth` まで必要です
 
 ## Actual Flow
 
@@ -196,6 +203,11 @@ cp ~/Downloads/client_secret_*.json ~/.config/iniad-gdrive/credentials.json
 ```
 
 `auth` はローカルの loopback server を立ててブラウザを開きます。認証後、token は `~/.config/iniad-gdrive/token.json` に保存されます。
+
+つまり `credentials.json` と `token.json` は別物です。
+
+- `credentials.json`: Google Cloud Console で作る OAuth client 情報
+- `token.json`: `auth` 実行後に保存される実ログイン状態
 
 つまり初回の実作業は次の順番です。
 

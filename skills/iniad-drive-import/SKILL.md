@@ -24,10 +24,12 @@ Use `iniad-gdrive` as the default entrypoint for INIAD Google Drive file retriev
 - If the task is coursework-related and no lecture-materials folder URL or folder ID is given, ask the user for it first.
 - If the destination directory materially matters and the user did not provide one, ask where to place the files unless there is an obvious repo-local target.
 - If `doctor` shows missing credentials or missing auth, tell the user exactly what is needed next instead of repeatedly retrying.
+- Explicitly mention that browser-based OAuth authentication is required for first-time use.
 - When asking, prefer concrete requests such as:
   - "講義資料フォルダの URL か folder ID をください"
   - "保存先フォルダを指定してください"
   - "Google Cloud Console で Desktop OAuth credentials を作って `credentials.json` を置いてください"
+  - "その後 `iniad-gdrive auth` で OAuth 認証を完了してください"
 
 3. Verify the CLI health if needed.
 - Run `iniad-gdrive doctor` when auth/config may be broken.
