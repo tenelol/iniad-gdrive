@@ -30,9 +30,11 @@ const MOCK_PATH = process.env.INIAD_GDRIVE_MOCK_PATH ?? "";
 
 function usage() {
   process.stdout.write(`Usage:
+  iniad-gdrive setup [--from PATH]
   iniad-gdrive auth
-  iniad-gdrive search <query> [--max N]
-  iniad-gdrive import (--id ID | --url URL | --query QUERY) [--dest PATH] [--mime MIME]
+  iniad-gdrive doctor
+  iniad-gdrive search <query> [--max N] [--folder URL_OR_ID]
+  iniad-gdrive import (--id ID | --url URL | --query QUERY) [--dest PATH] [--mime MIME] [--folder URL_OR_ID]
   iniad-gdrive browse [folder-id-or-url]
 
 Environment:
@@ -181,6 +183,13 @@ function withExportExtension(name, exportMime) {
 
 function queryWithDefaults(query) {
   return `trashed = false and (${query})`;
+}
+
+function scopedQuery(query, folderId = "") {
+  if (!folderId) {
+    return queryWithDefaults(query);
+  }
+  return `trashed = false and '${folderId}' in parents and (${query})`;
 }
 
 async function readJson(filePath) {
@@ -607,6 +616,23 @@ function createProvider() {
   return new GoogleDriveProvider();
 }
 
+async function resolveFolderId(folderValue) {
+  if (!folderValue) {
+    return "";
+  }
+  if (/^https?:\/\//.test(folderValue)) {
+    const parsed = extractUrlKindAndId(folderValue);
+    if (!parsed) {
+      fail(`Unsupported Google Drive URL: ${folderValue}`);
+    }
+    if (parsed.kind !== "folder") {
+      fail(`Expected a folder URL, got: ${folderValue}`);
+    }
+    return parsed.id;
+  }
+  return folderValue;
+}
+
 function formatFileLine(file) {
   return `${file.id}\t${file.mimeType}\t${file.name}`;
 }
@@ -631,6 +657,72 @@ async function resolveQueryToSingleFile(provider, query) {
     process.exit(1);
   }
   return files[0];
+}
+
+async function resolveQueryToSingleFileInFolder(provider, query, folderId = "") {
+  const files = await provider.search(scopedQuery(query, folderId), 30);
+  if (files.length === 0) {
+    const suffix = folderId ? ` in folder ${folderId}` : "";
+    fail(`No files matched query${suffix}: ${query}`);
+  }
+  if (files.length > 1) {
+    process.stderr.write("Multiple files matched query. Narrow the query or use --id/--url.\n");
+    for (const file of files) {
+      process.stderr.write(`${formatFileLine(file)}\n`);
+    }
+    process.exit(1);
+  }
+  return files[0];
+}
+
+async function cmdSetup(args) {
+  const { options } = parseOptions(args, { from: "string" });
+  await ensureDir(CONFIG_DIR);
+
+  if (options.from) {
+    await fsp.copyFile(options.from, CREDENTIALS_PATH);
+    process.stdout.write(`Copied credentials to ${CREDENTIALS_PATH}\n`);
+  }
+
+  process.stdout.write(`Config dir: ${CONFIG_DIR}\n`);
+  process.stdout.write(`Credentials path: ${CREDENTIALS_PATH}\n`);
+  process.stdout.write(`Token path: ${TOKEN_PATH}\n`);
+
+  try {
+    await fsp.access(CREDENTIALS_PATH, fs.constants.F_OK);
+    process.stdout.write("credentials.json: found\n");
+  } catch {
+    process.stdout.write("credentials.json: missing\n");
+    process.stdout.write("Next step: create a Google Cloud Desktop OAuth client and place the downloaded JSON there.\n");
+  }
+}
+
+async function cmdDoctor(provider) {
+  process.stdout.write(`Node: ${process.version}\n`);
+  process.stdout.write(`Config dir: ${CONFIG_DIR}\n`);
+  process.stdout.write(`Credentials path: ${CREDENTIALS_PATH}\n`);
+
+  if (MOCK_PATH) {
+    process.stdout.write("credentials.json: mock\n");
+  } else {
+    try {
+      await fsp.access(CREDENTIALS_PATH, fs.constants.F_OK);
+      process.stdout.write("credentials.json: ok\n");
+    } catch {
+      fail("credentials.json: missing\nRun: iniad-gdrive setup");
+    }
+  }
+
+  try {
+    await fsp.access(TOKEN_PATH, fs.constants.F_OK);
+    process.stdout.write("token.json: ok\n");
+  } catch {
+    fail("token.json: missing\nRun: iniad-gdrive auth");
+  }
+
+  await provider.requireAuth();
+  const files = await provider.search("trashed = false", 1);
+  process.stdout.write(`Drive API: ok (${files.length >= 0 ? "reachable" : "reachable"})\n`);
 }
 
 async function importFileById(provider, fileId, { dest = DEFAULT_DEST, exportMime = "" } = {}) {
@@ -665,14 +757,15 @@ async function cmdAuth(provider) {
 }
 
 async function cmdSearch(provider, args) {
-  const { options, positionals } = parseOptions(args, { max: "string" });
+  const { options, positionals } = parseOptions(args, { max: "string", folder: "string" });
   if (positionals.length < 1) {
     fail("search requires a query");
   }
   await provider.requireAuth();
   const query = positionals[0];
   const pageSize = Number.parseInt(options.max ?? "30", 10);
-  const files = await provider.search(queryWithDefaults(query), pageSize);
+  const folderId = await resolveFolderId(options.folder ?? "");
+  const files = await provider.search(scopedQuery(query, folderId), pageSize);
   for (const file of files) {
     process.stdout.write(`${formatFileLine(file)}\n`);
   }
@@ -685,6 +778,7 @@ async function cmdImport(provider, args) {
     query: "string",
     dest: "string",
     mime: "string",
+    folder: "string",
   });
 
   const modes = ["id", "url", "query"].filter((key) => options[key]);
@@ -693,6 +787,7 @@ async function cmdImport(provider, args) {
   }
 
   await provider.requireAuth();
+  const folderId = await resolveFolderId(options.folder ?? "");
 
   if (options.id) {
     await importFileById(provider, options.id, {
@@ -717,7 +812,7 @@ async function cmdImport(provider, args) {
     return;
   }
 
-  const file = await resolveQueryToSingleFile(provider, options.query);
+  const file = await resolveQueryToSingleFileInFolder(provider, options.query, folderId);
   await importFileById(provider, file.id, {
     dest: options.dest ?? DEFAULT_DEST,
     exportMime: options.mime ?? "",
@@ -816,8 +911,14 @@ async function main() {
     case "--help":
       usage();
       break;
+    case "setup":
+      await cmdSetup(rest);
+      break;
     case "auth":
       await cmdAuth(provider);
+      break;
+    case "doctor":
+      await cmdDoctor(provider);
       break;
     case "search":
       await cmdSearch(provider, rest);

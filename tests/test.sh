@@ -30,6 +30,11 @@ run_cli() {
 
 help_output="$(run_cli --help)"
 assert_contains "$help_output" "iniad-gdrive import"
+assert_contains "$help_output" "iniad-gdrive doctor"
+
+setup_output="$(run_cli setup)"
+assert_contains "$setup_output" "Config dir:"
+assert_contains "$setup_output" "credentials.json: missing"
 
 if run_cli search "name contains 'single-doc'" >"$TMPDIR_ROOT/out" 2>"$TMPDIR_ROOT/err"; then
   echo "search without auth should fail" >&2
@@ -39,9 +44,17 @@ assert_contains "$(cat "$TMPDIR_ROOT/err")" "Run: iniad-gdrive auth"
 
 run_cli auth >/dev/null
 
+doctor_output="$(run_cli doctor)"
+assert_contains "$doctor_output" "credentials.json: mock"
+assert_contains "$doctor_output" "token.json: ok"
+assert_contains "$doctor_output" "Drive API: ok"
+
 search_output="$(run_cli search "name contains 'single-doc'")"
 assert_contains "$search_output" "single-doc"
 assert_contains "$search_output" "application/vnd.google-apps.document"
+
+folder_scoped_search="$(run_cli search "name contains 'single-doc'" --folder root)"
+assert_contains "$folder_scoped_search" "single-doc"
 
 doc_path="$(run_cli import --url "https://docs.google.com/document/d/doc1/edit")"
 [ "$doc_path" = ".imports/iniad-gdrive/single-doc.md" ] || {
@@ -74,6 +87,12 @@ if run_cli import --query "name contains 'multi-hit'" >"$TMPDIR_ROOT/out" 2>"$TM
   exit 1
 fi
 assert_contains "$(cat "$TMPDIR_ROOT/err")" "Multiple files matched query"
+
+folder_import_path="$(run_cli import --query "name = 'archive.pdf'" --folder root)"
+[ "$folder_import_path" = ".imports/iniad-gdrive/archive.pdf" ] || {
+  printf 'Unexpected folder-scoped import path: %s\n' "$folder_import_path" >&2
+  exit 1
+}
 
 if run_cli import --url "https://drive.google.com/drive/folders/folder1" >"$TMPDIR_ROOT/out" 2>"$TMPDIR_ROOT/err"; then
   echo "folder import should fail" >&2
