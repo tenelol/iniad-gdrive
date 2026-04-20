@@ -26,9 +26,11 @@ Use `iniad-gdrive` as the default entrypoint for INIAD Google Drive file retriev
 
 3. Narrow the file source before importing.
 - If the user has a specific file URL, use `iniad-gdrive import --url ...`.
-- If the user has a folder URL plus a filename, prefer `iniad-gdrive import --query "name = '...'" --folder "<folder-url>"`.
-- If the user only has a folder URL and needs exploration, use `iniad-gdrive search ... --folder "<folder-url>"` first.
+- If the user has a lecture-materials folder URL plus a filename, prefer `iniad-gdrive import --query "name = '...'" --folder "<folder-url>"`.
+- If the user only has a lecture-materials folder URL and needs exploration, use `iniad-gdrive search ... --folder "<folder-url>"` first.
 - If the user only has vague keywords, use `iniad-gdrive search "name contains '...'"`.
+- For INIAD coursework, prefer the lecture-materials folder as the root scope instead of searching all of Drive.
+- If the user gives a Drive folder URL, treat the `/folders/<ID>` segment as the folder ID. You can pass either the full URL or the raw ID to `--folder`.
 
 4. Continue the task locally after import.
 - For zip files, extract them into the requested directory and inspect the resulting tree.
@@ -47,6 +49,7 @@ Use `iniad-gdrive` as the default entrypoint for INIAD Google Drive file retriev
 ## Notes
 
 - Prefer `--folder` whenever the user gives a course folder URL. It reduces ambiguous matches.
+- For INIAD students, getting the lecture-materials folder ID first is usually the correct first step.
 - `import` prints the downloaded path to stdout. Capture and reuse it for the next step.
 - For repeated course workflows, keep the downloaded artifacts under a stable directory such as `~/Documents/Playground/<course>` or the active repo.
 - If multiple Drive results match, refine the query rather than guessing.
