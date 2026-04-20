@@ -1,0 +1,21 @@
+{
+  "name": "iniad-gdrive",
+  "version": "0.1.0",
+  "description": "INIAD-oriented Google Drive import wrapper for gdrive and mygdrive",
+  "bin": {
+    "iniad-gdrive": "./bin/iniad-gdrive"
+  },
+  "scripts": {
+    "test": "./tests/test.sh"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "enquirer": "^2.4.1",
+    "execa": "^7.1.1",
+    "ink": "^6.5.1",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "react": "^19.2.1"
+  }
+}
