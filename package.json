@@ -1,7 +1,8 @@
 {
   "name": "iniad-gdrive",
-  "version": "0.1.0",
-  "description": "INIAD-oriented Google Drive import wrapper for gdrive and mygdrive",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "INIAD-oriented Google Drive import CLI with modern desktop OAuth",
   "bin": {
     "iniad-gdrive": "./bin/iniad-gdrive"
   },

@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "id": "folder1",
+      "name": "folder",
+      "mimeType": "application/vnd.google-apps.folder",
+      "parents": ["root"]
+    },
+    {
+      "id": "doc1",
+      "name": "single-doc",
+      "mimeType": "application/vnd.google-apps.document",
+      "parents": ["root"],
+      "exports": {
+        "text/markdown": "# doc\n"
+      }
+    },
+    {
+      "id": "file1",
+      "name": "archive.pdf",
+      "mimeType": "application/pdf",
+      "parents": ["root"],
+      "content": "pdf\n"
+    },
+    {
+      "id": "multi1",
+      "name": "multi-hit-alpha",
+      "mimeType": "application/pdf",
+      "parents": ["root"],
+      "content": "a\n"
+    },
+    {
+      "id": "multi2",
+      "name": "multi-hit-beta",
+      "mimeType": "application/pdf",
+      "parents": ["root"],
+      "content": "b\n"
+    }
+  ]
+}
