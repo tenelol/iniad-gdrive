@@ -139,10 +139,18 @@ skill 本体:
 
 1. ユーザーが Drive URL やファイル名を渡す
 2. agent が `iniad-drive-import` skill を使う
-3. 可能なら講義資料フォルダ URL / folder ID を起点にする
-4. `doctor` で認証状態を確認する
-5. `search --folder ...` または `import --folder ...` を実行する
-5. zip なら展開、Notebook なら実行、コードなら修正まで続ける
+3. 足りない前提があれば agent が先に要求する
+4. 可能なら講義資料フォルダ URL / folder ID を起点にする
+5. `doctor` で認証状態を確認する
+6. `search --folder ...` または `import --folder ...` を実行する
+7. zip なら展開、Notebook なら実行、コードなら修正まで続ける
+
+AI が最初に要求すべきものは主にこれです。
+
+- 講義資料フォルダの URL または folder ID
+- 取得したいファイル名、または検索キーワード
+- 保存先フォルダ
+- 未設定なら `credentials.json` と `auth` の完了
 
 ## Auth
 
