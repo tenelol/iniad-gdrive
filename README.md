@@ -34,7 +34,7 @@ npm install
 1. この repo を clone する
 2. `npm install`
 3. `./bin/iniad-gdrive setup`
-4. Google Cloud で Desktop app の OAuth credentials を作って `credentials.json` を置く
+4. Google Cloud Console で Desktop app の OAuth credentials を作って `credentials.json` を置く
 5. `./bin/iniad-gdrive auth`
 6. `./bin/iniad-gdrive doctor`
 7. `search` または `import` を使う
@@ -110,10 +110,33 @@ INIAD 用の認証は専用 config dir に分けます。
 - `$XDG_CONFIG_HOME/iniad-gdrive`
 - `XDG_CONFIG_HOME` が無ければ `~/.config/iniad-gdrive`
 
-最初に Google Cloud で Desktop app の OAuth credentials を作り、その JSON を次のどちらかに置きます。
+最初に Google Cloud Console 側で Desktop app の OAuth credentials を作ります。
+
+### Google Cloud Console でやること
+
+1. [Google Cloud Console](https://console.cloud.google.com/) を開く
+2. project を選ぶ。無ければ新規作成する
+3. [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) を開いて `Enable` する
+4. [Google Auth Platform / Clients](https://console.cloud.google.com/auth/clients) を開く
+5. `Create client` を押す
+6. `Application type` を `Desktop app` にする
+7. client を作成して JSON をダウンロードする
+
+必要なら公式ドキュメント:
+
+- [Create credentials](https://developers.google.com/workspace/guides/create-credentials)
+- [OAuth 2.0 for Desktop Apps](https://developers.google.com/identity/protocols/oauth2/native-app)
+
+ダウンロードした JSON を次のどちらかに置きます。
 
 - `~/.config/iniad-gdrive/credentials.json`
 - 任意の場所に置いて `INIAD_GDRIVE_OAUTH_CREDENTIALS=/path/to/credentials.json`
+
+例えば Downloads に落ちた JSON をそのまま使うなら:
+
+```bash
+cp ~/Downloads/client_secret_*.json ~/.config/iniad-gdrive/credentials.json
+```
 
 その後に:
 
@@ -122,6 +145,15 @@ INIAD 用の認証は専用 config dir に分けます。
 ```
 
 `auth` はローカルの loopback server を立ててブラウザを開きます。認証後、token は `~/.config/iniad-gdrive/token.json` に保存されます。
+
+つまり初回の実作業は次の順番です。
+
+1. repo を clone して `npm install`
+2. Google Cloud Console で Drive API を有効化
+3. Google Cloud Console で Desktop OAuth client を作成
+4. ダウンロードした `credentials.json` を `~/.config/iniad-gdrive/` に置く
+5. `./bin/iniad-gdrive auth`
+6. `./bin/iniad-gdrive doctor`
 
 認証状態の確認:
 
