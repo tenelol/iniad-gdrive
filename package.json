@@ -1,11 +1,19 @@
 {
   "name": "iniad-gdrive",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "INIAD-oriented Google Drive import CLI with modern desktop OAuth",
   "bin": {
     "iniad-gdrive": "./bin/iniad-gdrive"
   },
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "bin/",
+    "scripts/",
+    "skills/",
+    "src/"
+  ],
   "scripts": {
     "test": "./tests/test.sh",
     "doctor": "./bin/iniad-gdrive doctor",

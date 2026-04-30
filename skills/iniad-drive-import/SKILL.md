@@ -43,11 +43,21 @@ Use `iniad-gdrive` as the default entrypoint for INIAD Google Drive file retriev
 - If the user only has vague keywords, use `iniad-gdrive search "name contains '...'"`.
 - For INIAD coursework, prefer the lecture-materials folder as the root scope instead of searching all of Drive.
 - If the user gives a Drive folder URL, treat the `/folders/<ID>` segment as the folder ID. You can pass either the full URL or the raw ID to `--folder`.
+- The CLI does not persist a default Google Drive course root. Do not assume a lecture-materials folder is already configured. Reuse a folder URL or folder ID from the user/context, and pass it with `--folder` on each scoped `search` or `import --query`.
 
 5. Continue the task locally after import.
 - For zip files, extract them into the requested directory and inspect the resulting tree.
 - For notebooks, scripts, or documents, run or inspect them and finish the actual task instead of stopping at download.
 - Report the final local path and the result of the downstream work.
+
+## Google Drive root handling
+
+- There is no stored default Google Drive root folder in `iniad-gdrive` config.
+- `credentials.json` and `token.json` only configure authentication; they do not define a course root.
+- Treat the lecture-materials folder URL or folder ID as the task root only after the user provides it or it is already present in the conversation.
+- For scoped lookup, always include `--folder "<folder-url-or-id>"`.
+- `iniad-gdrive browse` without an argument starts at Google Drive `root` / My Drive, not at an INIAD lecture-materials folder.
+- If the user asks whether a Google Drive root is configured, say that no persistent course root exists unless a future CLI config feature has been added; verify from the repo before claiming otherwise.
 
 ## Required inputs to ask for
 
